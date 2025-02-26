@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35818.85
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeAPI", "EmployeeAPI\EmployeeAPI\EmployeeAPI.csproj", "{EA45FD80-6883-7929-F2DB-0EB9091F9127}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeAPI", "EmployeeAPI\EmployeeAPI.csproj", "{EA45FD80-6883-7929-F2DB-0EB9091F9127}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeBlazorApp", "EmployeeBlazorApp\EmployeeBlazorApp.csproj", "{0EF2ED1E-F4DD-4CC9-935B-2DAD37413ABE}"
 EndProject
