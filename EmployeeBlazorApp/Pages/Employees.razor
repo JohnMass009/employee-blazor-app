@@ -1,0 +1,152 @@
+﻿@using EmployeeAPI.Contracts.Dto
+@using MudBlazor
+@using EmployeeBlazorApp.Services
+@inject EmployeeService EmployeeService
+@page "/employees"
+
+@if (isLoading)
+{
+    <MudOverlay Visible="true" DarkBackground="true" ZIndex="9999">
+        <MudProgressCircular Color="Color.Secondary" Indeterminate="true" />
+    </MudOverlay>
+}
+
+<MudTable Items="@paginatedEmployees"
+            Hover="true"
+            SortLabel="true"
+            SortDirection="sortDirection"
+            SortBy="sortColumn"
+            OnSortChanged="OnSortChanged"
+            Page="@pageIndex"
+            RowsPerPage="rowsPerPage">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel T="EmployeeDto"
+            SortBy="@(e => e.FirstName)">
+                Имя
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel T="EmployeeDto"
+            SortBy="@(e => e.LastName)">
+                Фамилия
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel T="EmployeeDto"
+            SortBy="@(e => e.Position)">
+                Должность
+            </MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate Context="employee">
+        <MudTd DataLabel="Имя">@employee.FirstName</MudTd>
+        <MudTd DataLabel="Фамилия">@employee.LastName</MudTd>
+        <MudTd DataLabel="Должность">@employee.Position</MudTd>
+    </RowTemplate>
+</MudTable>
+
+<MudGrid>
+    <MudItem xs="6">
+        <MudSelect T="int" Label="Rows per Page" Value="@rowsPerPage" ValueChanged="OnRowsPerPageChanged">
+            <MudSelectItem T="int" Value="5">5</MudSelectItem>
+            <MudSelectItem T="int" Value="10">10</MudSelectItem>
+            <MudSelectItem T="int" Value="15">15</MudSelectItem>
+            <MudSelectItem T="int" Value="20">20</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+    <MudItem xs="6" class="d-flex justify-content-end">
+        <MudPagination 
+            Rectangular="true" 
+            Size="Size.Medium"
+                       BoundaryCount="2" 
+                       MiddleCount="5"
+                       ShowFirstButton="true"
+                       ShowLastButton="true"
+                       Count="@totalPages"
+                       SelectedIndex="@pageIndex"
+                       SelectedChanged="OnPageChanged" />
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<EmployeeDto> employees = [];
+    private List<EmployeeDto> paginatedEmployees = [];
+    private SortDirection sortDirection = SortDirection.Ascending;
+    private string sortColumn = nameof(EmployeeDto.FirstName);
+    private bool isLoading = false;
+    private int pageIndex = 0;
+    private int rowsPerPage = 10;
+    private int totalPages = 1;
+    private int totalCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalCount = await EmployeeService.GetTotalEmployeesCountAsync();
+        await LoadEmployeesAsync();
+    }
+
+    private async Task LoadEmployeesAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+        var response = await EmployeeService.GetEmployeesAsync(sortColumn, sortDirection == SortDirection.Ascending, pageIndex * rowsPerPage, rowsPerPage);
+
+        paginatedEmployees = response.Items.ToList();
+        totalCount = response.TotalCount;
+        totalPages = response.TotalPages;
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task ApplyPagination()
+    {
+        paginatedEmployees = employees
+            .Skip(pageIndex * rowsPerPage)
+            .Take(rowsPerPage)
+            .ToList();
+
+        await LoadEmployeesAsync();
+    }
+
+    private async Task OnSortChanged()
+    {
+        sortDirection = sortDirection == SortDirection.Ascending ? SortDirection.Descending : SortDirection.Ascending;
+
+        employees = SortEmployees(sortColumn, sortDirection);
+        
+        await ApplyPagination();
+    }
+
+    private async Task OnPageChanged(int newPage)
+    {
+        pageIndex = --newPage;
+        await ApplyPagination();
+    }
+
+    private async Task OnRowsPerPageChanged(int value)
+    {
+        rowsPerPage = value;
+        totalPages = (int)Math.Ceiling((double)employees.Count / rowsPerPage);
+        await ApplyPagination();
+    }
+
+    private List<EmployeeDto> SortEmployees(string column, SortDirection direction)
+    {
+        return column.ToLower() switch
+        {
+            "firstname" => direction == SortDirection.Ascending
+                ? employees.OrderBy(e => e.FirstName).ToList()
+                : employees.OrderByDescending(e => e.FirstName).ToList(),
+            "lastname" => direction == SortDirection.Ascending
+                ? employees.OrderBy(e => e.LastName).ToList()
+                : employees.OrderByDescending(e => e.LastName).ToList(),
+            "position" => direction == SortDirection.Ascending
+                ? employees.OrderBy(e => e.Position).ToList()
+                : employees.OrderByDescending(e => e.Position).ToList(),
+            _ => employees
+        };
+    }
+}

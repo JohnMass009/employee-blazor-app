@@ -1,0 +1,13 @@
+﻿@using EmployeeBlazorApp.Shared
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <MudText Typo="Typo.h6">Страница не найдена</MudText>
+        </LayoutView>
+    </NotFound>
+</Router>
