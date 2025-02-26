@@ -1,0 +1,17 @@
+[
+  {
+    "Name": "Main Profile",
+    "Projects": [
+      {
+        "Path": "EmployeeBlazorApp\\EmployeeBlazorApp.csproj",
+        "Action": "Start",
+        "DebugTarget": "http"
+      },
+      {
+        "Path": "EmployeeAPI\\EmployeeAPI.csproj",
+        "Action": "StartWithoutDebugging",
+        "DebugTarget": "http"
+      }
+    ]
+  }
+]
