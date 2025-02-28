@@ -3,18 +3,14 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using EmployeeBlazorApp;
 using MudBlazor.Services;
 using EmployeeBlazorApp.Services;
-using System.Net.Http.Json;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-var apiBaseUrl = builder.Configuration.GetValue<string>("EmployeeApiBaseUrl")
-    ?? throw new Exception("Не удалось загрузить конфигурацию из appsettings.json");
-
-builder.Services.AddScoped(sp =>
+builder.Services.AddHttpClient("EmployeeApi", client =>
 {
-    return new HttpClient { BaseAddress = new Uri(apiBaseUrl) };
+    var apiBaseUrl = builder.Configuration["EmployeeApiBaseUrl"] 
+        ?? throw new Exception("Не удалось загрузить конфигурацию из appsettings.json"); ;
+    client.BaseAddress = new Uri(apiBaseUrl);
 });
 
 builder.Services.AddMudServices();
