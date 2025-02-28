@@ -1,4 +1,5 @@
 ﻿@using EmployeeBlazorApp.Services.Greating
+@using System.Timers
 @page "/"
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
@@ -11,36 +12,29 @@
     private string greetingMessage = string.Empty;
     private Timer timer;
     private int lastCheckedHour = -1;
-    private bool _isActive = false;
+    private bool _isActive = true;
 
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += OnNavigated;
 
-        _isActive = true;
-        await InitializeGreeting();
+        await UpdateGreetingAndCheckTime();
         StartTimer();
-    }
-
-    private async Task InitializeGreeting()
-    {
-        lastCheckedHour = await GetCurrentHourFromJS();
-        UpdateGreeting();
     }
 
     private void StartTimer()
     {
-        timer?.Dispose();
-        timer = new Timer(async _ =>
+        timer = new Timer(60000);
+        timer.Elapsed += async (sender, e) =>
         {
-            if (!_isActive) return;
-            await UpdateGreetingAndCheckTime();
-        }, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            await InvokeAsync(UpdateGreetingAndCheckTime);
+        };
+        timer.Start();
     }
 
     private async Task UpdateGreetingAndCheckTime()
     {
-        var currentHour = await GetCurrentHourFromJS();
+        var currentHour = DateTime.Now.Hour;
 
         if (currentHour != lastCheckedHour)
         {
@@ -61,11 +55,6 @@
         };
 
         greetingMessage = new GreetingService(greetingStrategy).GetGreeting();
-    }
-
-    private async Task<int> GetCurrentHourFromJS()
-    {
-        return await JSRuntime.InvokeAsync<int>("getCurrentHour");
     }
 
     private void OnNavigated(object? sender, LocationChangedEventArgs e)
